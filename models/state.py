@@ -1,13 +1,11 @@
 #!/usr/bin/python3
 """Defines the State class."""
-import models
 from os import getenv
-from models.base_model import Base
-from models.base_model import BaseModel
-from models.city import City
-from sqlalchemy import Column
-from sqlalchemy import String
+from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
+from models.base_model import Base, BaseModel
+import models
+from models.city import City
 
 
 class State(BaseModel, Base):
@@ -22,11 +20,13 @@ class State(BaseModel, Base):
     """
     __tablename__ = "states"
     name = Column(String(128), nullable=False)
-    cities = relationship("City",  backref="state", cascade="delete")
+
+    # SQLAlchemy relationship definition
+    cities = relationship("City", backref="state", cascade="delete")
 
     if getenv("HBNB_TYPE_STORAGE") != "db":
         @property
-        def cities(self):
+        def cities_list(self):
             """Get a list of all related City objects."""
             city_list = []
             for city in list(models.storage.all(City).values()):

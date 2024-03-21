@@ -1,12 +1,12 @@
 #!/usr/bin/python3
 """Defines the BaseModel class."""
-import models
 from uuid import uuid4
 from datetime import datetime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column
 from sqlalchemy import DateTime
 from sqlalchemy import String
+import models
 
 Base = declarative_base()
 
@@ -24,7 +24,7 @@ class BaseModel:
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow())
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow())
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         """Initialize a new BaseModel.
 
         Args:
@@ -35,7 +35,7 @@ class BaseModel:
         self.created_at = self.updated_at = datetime.utcnow()
         if kwargs:
             for key, value in kwargs.items():
-                if key == "created_at" or key == "updated_at":
+                if key in("created_at", "updated_at"):
                     value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
                 if key != "__class__":
                     setattr(self, key, value)
@@ -67,4 +67,4 @@ class BaseModel:
         """Return the print/str representation of the BaseModel instance."""
         d = self.__dict__.copy()
         d.pop("_sa_instance_state", None)
-        return "[{}] ({}) {}".format(type(self).__name__, self.id, d)
+        return f"[{type(self).__name__}] ({self.id}) {d}"

@@ -1,18 +1,14 @@
 #!/usr/bin/python3
 """Defines the Place class."""
-import models
 from os import getenv
-from models.base_model import Base
-from models.base_model import BaseModel
+
+from sqlalchemy import Column, Float, ForeignKey, Integer, String, Table
+from sqlalchemy.orm import relationship
+
+import models
+from models.base_model import Base, BaseModel
 from models.amenity import Amenity
 from models.review import Review
-from sqlalchemy import Column
-from sqlalchemy import Float
-from sqlalchemy import ForeignKey
-from sqlalchemy import Integer
-from sqlalchemy import String
-from sqlalchemy import Table
-from sqlalchemy.orm import relationship
 
 
 association_table = Table("place_amenity", Base.metadata,
@@ -63,7 +59,7 @@ class Place(BaseModel, Base):
 
     if getenv("HBNB_TYPE_STORAGE", None) != "db":
         @property
-        def reviews(self):
+        def reviews_list(self):
             """Get a list of all linked Reviews."""
             review_list = []
             for review in list(models.storage.all(Review).values()):
@@ -72,7 +68,7 @@ class Place(BaseModel, Base):
             return review_list
 
         @property
-        def amenities(self):
+        def amenities_list(self):
             """Get/set linked Amenities."""
             amenity_list = []
             for amenity in list(models.storage.all(Amenity).values()):
@@ -82,5 +78,5 @@ class Place(BaseModel, Base):
 
         @amenities.setter
         def amenities(self, value):
-            if type(value) == Amenity:
+            if isinstance(value, Amenity):
                 self.amenity_ids.append(value.id)
