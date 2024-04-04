@@ -8,6 +8,21 @@ from os.path import exists
 env.hosts = ['54.157.184.104', '54.157.186.151']
 
 
+def do_pack():
+    """
+    return the archive path if archive has generated
+    """
+    local("mkdir -p version")
+    date = datetime.now().strftime("%Y%m%d%H%M%S")
+    path = "versions/web_static_{}.tgz".format(date)
+    tgz_archive = local("tar -cvzf {} web_static".format(path))
+
+    if tgz_archive.succeeded:
+        return path
+    else:
+        return None
+
+
 def do_deploy(archive_path):
     """
     Distributes an archive to web servers.
