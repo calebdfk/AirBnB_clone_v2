@@ -9,7 +9,7 @@ import models
 from models.base_model import Base, BaseModel
 from models.amenity import Amenity
 from models.review import Review
-
+from models.place import Place
 
 association_table = Table("place_amenity", Base.metadata,
                           Column("place_id", String(60),
