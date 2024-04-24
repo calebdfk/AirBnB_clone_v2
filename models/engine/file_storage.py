@@ -2,7 +2,6 @@
 """
 Contains the FileStorage class
 """
-
 import json
 from models.amenity import Amenity
 from models.base_model import BaseModel
@@ -17,15 +16,13 @@ classes = {"Amenity": Amenity, "BaseModel": BaseModel, "City": City,
 
 
 class FileStorage:
-    """serializes instances to a JSON file & deserializes back to instances"""
+    """Serializes instances to a JSON file & deserializes back to instances."""
 
-    # string - path to the JSON file
     __file_path = "file.json"
-    # dictionary - empty but will store all objects by <class name>.id
     __objects = {}
 
     def all(self, cls=None):
-        """returns the dictionary __objects"""
+        """Returns the dictionary __objects."""
         if cls is not None:
             new_dict = {}
             for key, value in self.__objects.items():
@@ -35,13 +32,13 @@ class FileStorage:
         return self.__objects
 
     def new(self, obj):
-        """sets in __objects the obj with key <obj class name>.id"""
+        """Sets in __objects the obj with key <obj class name>.id."""
         if obj is not None:
             key = obj.__class__.__name__ + "." + obj.id
             self.__objects[key] = obj
 
     def save(self):
-        """serializes __objects to the JSON file (path: __file_path)"""
+        """Serializes __objects to the JSON file (path: __file_path)."""
         json_objects = {}
         for key in self.__objects:
             json_objects[key] = self.__objects[key].to_dict()
@@ -49,22 +46,37 @@ class FileStorage:
             json.dump(json_objects, f)
 
     def reload(self):
-        """deserializes the JSON file to __objects"""
+        """Deserializes the JSON file to __objects."""
         try:
             with open(self.__file_path, 'r') as f:
                 jo = json.load(f)
             for key in jo:
-                self.__objects[key] = classes[jo[key]["__class__"]](**jo[key])
-        except:
-            pass
+                obj_data = jo[key]
+                if '__class__' in obj_data:
+                    cls_name = obj_data['__class__']
+                    if cls_name in classes:
+                        obj = classes[cls_name](**obj_data)
+                        if cls_name == 'State':
+                            # Handle reloading cities relationship for State
+                            if 'cities' in obj_data:
+                                city_ids = obj_data['cities']
+                                cities = []
+                                for city_id in city_ids:
+                                    city_key = "City." + city_id
+                                    if city_key in self.__objects:
+                                        cities.append(self.__objects[city_key])
+                                obj.cities = cities
+                        self.__objects[key] = obj
+        except Exception as e:
+            print("Exception:", e)
 
     def delete(self, obj=None):
-        """delete obj from __objects if it’s inside"""
+        """Deletes obj from __objects if it’s inside."""
         if obj is not None:
             key = obj.__class__.__name__ + '.' + obj.id
             if key in self.__objects:
                 del self.__objects[key]
 
     def close(self):
-        """call reload() method for deserializing the JSON file to objects"""
+        """Calls reload() method for deserializing the JSON file to objects."""
         self.reload()
